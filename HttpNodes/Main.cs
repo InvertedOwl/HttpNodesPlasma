@@ -26,7 +26,8 @@ namespace HttpNodes
 
             entry.OnToggle = OnToggle;
 #if DEBUG
-			entry.OnUnload = OnUnload;
+            entry.OnUnload = OnUnload;
+            
 #endif
              
             return true;
