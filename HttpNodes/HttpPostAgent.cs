@@ -28,8 +28,7 @@ namespace HttpNodes
         [SketchNodePortOperation(1)]
         public void Post(SketchNode node)
         {
-            try
-            {
+
                 UnityModManager.Logger.Log("V1 " + _v1.GetValueString());
                 UnityModManager.Logger.Log("V2 " + _v2.GetValueString());
                 UnityModManager.Logger.Log("V3 " + _v3.GetValueString());
@@ -55,7 +54,8 @@ namespace HttpNodes
                     Main.client.DefaultRequestHeaders.Add(k, jsonHeaders[k]);
                 }
                 UnityModManager.Logger.Log("About to send " + jsonBody.ToString() + " to " + this._v1.GetValue().stringValue);
-
+            try
+            {
                 Main.client.PostAsync(this._v1.GetValue().stringValue, new FormUrlEncodedContent(jsonBody)).GetAwaiter().GetResult();
                 node.ports.Values.Last().Commit(new Data());
             }

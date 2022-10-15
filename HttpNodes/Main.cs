@@ -103,6 +103,7 @@ namespace HttpNodes
 		}
 #endif
 
+        /*
         // Add Harmony patches down here!
         [HarmonyPatch(typeof(WorldController), "LoadDevice")]
         public class DevicePatch
@@ -127,6 +128,6 @@ namespace HttpNodes
                 }
                 return true;
             }
-        }
+        }*/
     }
 }

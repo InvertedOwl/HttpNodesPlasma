@@ -1,4 +1,5 @@
 ﻿using Behavior;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,15 +25,21 @@ namespace HttpNodes
         [SketchNodePortOperation(1)]
         public void Get(SketchNode node)
         {
-            foreach (int id in this._runtimeProperties.Keys)
+            var jsonHeaders = new Dictionary<string, string>();
+            if (_v2.GetValueString() != "")
             {
-                UnityModManager.Logger.Log(id + ": " + this._runtimeProperties[id].GetValueString());
+                jsonHeaders = JsonConvert.DeserializeObject<Dictionary<string, string>>(_v2.GetValueString());
             }
+            foreach (var k in jsonHeaders.Keys)
+            {
+                UnityModManager.Logger.Log("Adding to header " + k + ": " + jsonHeaders[k]);
+                Main.client.DefaultRequestHeaders.Add(k, jsonHeaders[k]);
+            }
+
             try
             {
                 string result = Main.client.GetStringAsync(this._v1.GetValueString()).GetAwaiter().GetResult();
                 
-
                 node.ports.Values.Last().Commit(new Data(result));
             }
             catch (Exception e)
