@@ -45,7 +45,7 @@
       <HintPath>D:\SteamLibrary\steamapps\common\Plasma Demo\Plasma_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Plasma Demo\Plasma_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>D:\SteamLibrary\steamapps\common\Plasma Demo\Plasma_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="Plasma-Custom-Nodes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">

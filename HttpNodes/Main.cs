@@ -79,6 +79,11 @@ namespace HttpNodes
                 CustomNodeManager.CreateOutputPort(httpGestalt, "Result", "Result of the request", Data.Types.String);
             }
 
+            if (name == "GET")
+            {
+                CustomNodeManager.CreateOutputPort(httpGestalt, "Headers", "Headers of the response", Data.Types.String);
+            }
+
 
 
 

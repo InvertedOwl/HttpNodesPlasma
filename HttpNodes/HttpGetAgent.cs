@@ -6,6 +6,11 @@ using System.Linq;
 using System.Text;
 using UnityModManagerNet;
 using PlasmaModding;
+using System.Threading.Tasks;
+using System.Net.Http;
+using NodeCanvas.Tasks.Actions;
+using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace HttpNodes
 {
@@ -28,13 +33,29 @@ namespace HttpNodes
 
             try
             {
-                string result = Main.client.GetStringAsync(GetProperty("Url").GetValueString()).GetAwaiter().GetResult();
 
-                WriteOutput("Result", new Data(result));
+                using (var client = new HttpClient())
+                {
+                    var url = GetProperty("Url").GetValueString();
+                    var response = client.GetAsync(url).Result;
+                    
+
+
+                    // by calling .Result you are performing a synchronous call
+                    var responseContent = response.Content;
+
+                    // by calling .Result you are synchronously reading the result
+                    string responseString = responseContent.ReadAsStringAsync().Result;
+                    WriteOutput("Result", new Data(responseString));
+
+                    //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
+
+                    WriteOutput("Headers", new Data(response.Headers.ToString()));
+                }
             }
             catch (Exception e)
             {
-                WriteOutput("Result", new Data("An error has occured"));
+                WriteOutput("Result", new Data("An error has occured " + e.ToString()));
             }
         }
     }
