@@ -7,6 +7,10 @@ using UnityEngine;
 using PlasmaModding;
 using Behavior;
 using System.Linq;
+using Sirenix.Serialization;
+using System.IO;
+using Visor;
+using System.Threading.Tasks;
 
 namespace HttpNodes
 {
@@ -37,50 +41,46 @@ namespace HttpNodes
         public static void InitNodes()
         {
             // Get Request
-            AgentGestalt getGestalt = (AgentGestalt)ScriptableObject.CreateInstance(typeof(AgentGestalt));
-            getGestalt.displayName = "Http Get";
-            getGestalt.componentCategory = AgentGestalt.ComponentCategories.Behavior;
-            getGestalt.properties = new Dictionary<int, AgentGestalt.Property>();
-            getGestalt.ports = new Dictionary<int, AgentGestalt.Port>();
-            getGestalt.nodeCategory = AgentCategoryEnum.Misc;
-            getGestalt.type = AgentGestalt.Types.Logic;
+            addHttpNode("GET", typeof(HttpGetAgent), false);
 
-            CustomNodeManager.CreateCommandPort(getGestalt, "Get", "Executes a GET request on the provided URL", 1);
-
-            CustomNodeManager.CreatePropertyPort(getGestalt, "Url", "Executes a GET request on the provided URL", Data.Types.String, true, new Data(""));
-            CustomNodeManager.CreatePropertyPort(getGestalt, "Headers", "Headers for the request", Data.Types.String, true, new Data(""));
-
-
-            CustomNodeManager.CreateOutputPort(getGestalt, "Result", "Result of the request");
-
-            getGestalt.agent = typeof(HttpGetAgent);
-
-            CustomNodeManager.CreateNode(getGestalt, "Http Get");
-            
-
+            // Delete Request
+            addHttpNode("DELETE", typeof(HttpDeleteAgent), false);
 
             // Post Request
-            AgentGestalt postGestalt = (AgentGestalt)ScriptableObject.CreateInstance(typeof(AgentGestalt));
-            postGestalt.displayName = "Http Post";
-            postGestalt.componentCategory = AgentGestalt.ComponentCategories.Behavior;
-            postGestalt.properties = new Dictionary<int, AgentGestalt.Property>();
-            postGestalt.ports = new Dictionary<int, AgentGestalt.Port>();
-            postGestalt.nodeCategory = AgentCategoryEnum.Misc;
-            postGestalt.type = AgentGestalt.Types.Logic;
+            addHttpNode("POST", typeof(HttpPostAgent), true);
 
+            // Put Request
+            addHttpNode("PUT", typeof(HttpPutAgent), true);
+
+            // Patch Request
+            addHttpNode("PATCH", typeof(HttpPatchAgent), true);
+        }
+
+        public static void addHttpNode(string name, System.Type agent, bool payload)
+        {
+            AgentGestalt httpGestalt = (AgentGestalt)ScriptableObject.CreateInstance(typeof(AgentGestalt));
+            httpGestalt.displayName = "HTTP " + name;
+            httpGestalt.componentCategory = AgentGestalt.ComponentCategories.Behavior;
+            httpGestalt.properties = new Dictionary<int, AgentGestalt.Property>();
+            httpGestalt.ports = new Dictionary<int, AgentGestalt.Port>();
+            httpGestalt.nodeCategory = AgentCategoryEnum.Misc;
+            httpGestalt.type = AgentGestalt.Types.Logic;
+            
             // Ports
-            CustomNodeManager.CreateCommandPort(postGestalt, "POST", "Executes a POST request on the provided URL", 1);
+            CustomNodeManager.CreateCommandPort(httpGestalt, name, "Executes a " + name + " request on the provided URL", 1);
 
-            CustomNodeManager.CreatePropertyPort(postGestalt, "Url", "Executes a POST request on the provided URL", Data.Types.String, true, new Data(""));
-            CustomNodeManager.CreatePropertyPort(postGestalt, "Headers", "Headers for the request", Data.Types.String, true, new Data(""));
-            CustomNodeManager.CreatePropertyPort(postGestalt, "Payload", "Payload for the request", Data.Types.String, true, new Data(""));
+            CustomNodeManager.CreatePropertyPort(httpGestalt, "Url", "Executes a " + name + " request on the provided URL", Data.Types.String, true, new Data(""));
+            CustomNodeManager.CreatePropertyPort(httpGestalt, "Headers", "Headers for the request", Data.Types.String, true, new Data(""));
+            
+            if (payload)
+                CustomNodeManager.CreatePropertyPort(httpGestalt, "Payload", "Payload for the request", Data.Types.String, true, new Data(""));
 
 
-            CustomNodeManager.CreateOutputPort(postGestalt, "Result", "Result of the request", Data.Types.String);
+            CustomNodeManager.CreateOutputPort(httpGestalt, "Result", "Result of the request", Data.Types.String);
 
-            postGestalt.agent = typeof(HttpPostAgent);
+            httpGestalt.agent = agent;
 
-            CustomNodeManager.CreateNode(postGestalt, "Http Post");
+            CustomNodeManager.CreateNode(httpGestalt, "HTTP " + name);
         }
 
 
@@ -104,29 +104,37 @@ namespace HttpNodes
 		}
 #endif
 
+        // I cannot get it to release the mouse. So for now it is disabled
+        
         /*
-        // Add Harmony patches down here!
-        [HarmonyPatch(typeof(WorldController), "LoadDevice")]
+        [HarmonyPatch(typeof(Device), "ToggleState")]
         public class DevicePatch
         {
-            public static bool Prefix(Device device, SerializedDevice serializedDevice, SerializedAssetsLibrary serializedAssetsLibrary, bool restoreRuntime, bool asyncLoad)
+            public static bool Prefix(ComponentHandler origin, Device __instance, bool quietly = false)
             {
-                UnityModManager.Logger.Log("Loading Device.. with " + serializedDevice.agents.Count() + " agents");
-                foreach (SerializedAgent a in serializedDevice.agents)
+                if (__instance.state == Device.State.Solid)
                 {
-                    if (a.agentId.displayName == "Http Get")
+                    return true;
+                }
+
+                UnityModManager.Logger.Log("Loading Device.. with " + Controllers.worldController.targetDevice.agents.Count() + " agents");
+                foreach (Agent a in Controllers.worldController.targetDevice.agents)
+                {
+                    if (a.agentId.displayName == "HTTP GET")
                     {
-                        Cursor.visible = true;
-                        Cursor.lockState = CursorLockMode.None;
-                        Controllers.worldController.visor.OpenDialogBox("Warning", "The device about to be loaded contains HTTP nodes which may expose your IP address to external servers not associated with Plasma. Do you still want to load it?", "No", "Yes", null);
+
+                        // Doesnt unlock mouse or pause game, two things that it should be doing.
+                        // I think its because the player is holding on to a device at this point and you can free your mouse when the player has a 
+
                         Controllers.worldController.PauseGame();
+                        Controllers.worldController.visor.OpenDialogBox("Warning", "The sketch about to be run contains HTTP nodes which could expose your IP address to external servers not associated with Plasma. Do you wish to continue?", "No", "Yes", Main.HandleVisorResponse, true, false, 0);
+                    
+
                         return false;
 
-
                     }
-                    UnityModManager.Logger.Log(a.agentId + "");
-
                 }
+
                 return true;
             }
         }*/
