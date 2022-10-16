@@ -40,32 +40,29 @@ namespace HttpNodes
 
         public static void InitNodes()
         {
+            AgentCategoryEnum httpCategory = CustomNodeManager.CustomCategory("HTTP");
+
+
             // Get Request
-            addHttpNode("GET", typeof(HttpGetAgent), false);
+            addHttpNode("GET", typeof(HttpGetAgent), false, httpCategory);
 
             // Delete Request
-            addHttpNode("DELETE", typeof(HttpDeleteAgent), false);
+            addHttpNode("DELETE", typeof(HttpDeleteAgent), false, httpCategory);
 
             // Post Request
-            addHttpNode("POST", typeof(HttpPostAgent), true);
+            addHttpNode("POST", typeof(HttpPostAgent), true, httpCategory);
 
             // Put Request
-            addHttpNode("PUT", typeof(HttpPutAgent), true);
+            addHttpNode("PUT", typeof(HttpPutAgent), true, httpCategory);
 
             // Patch Request
-            addHttpNode("PATCH", typeof(HttpPatchAgent), true);
+            addHttpNode("PATCH", typeof(HttpPatchAgent), true, httpCategory);
         }
 
-        public static void addHttpNode(string name, System.Type agent, bool payload)
+        public static void addHttpNode(string name, System.Type agent, bool payload, AgentCategoryEnum category)
         {
-            AgentGestalt httpGestalt = (AgentGestalt)ScriptableObject.CreateInstance(typeof(AgentGestalt));
-            httpGestalt.displayName = "HTTP " + name;
-            httpGestalt.componentCategory = AgentGestalt.ComponentCategories.Behavior;
-            httpGestalt.properties = new Dictionary<int, AgentGestalt.Property>();
-            httpGestalt.ports = new Dictionary<int, AgentGestalt.Port>();
-            httpGestalt.nodeCategory = AgentCategoryEnum.Misc;
-            httpGestalt.type = AgentGestalt.Types.Logic;
-            
+            AgentGestalt httpGestalt = CustomNodeManager.CreateGestalt(agent, "HTTP " + name, "Executes a " + name + " request on the provided URL", category);
+
             // Ports
             CustomNodeManager.CreateCommandPort(httpGestalt, name, "Executes a " + name + " request on the provided URL", 1);
 
@@ -73,12 +70,17 @@ namespace HttpNodes
             CustomNodeManager.CreatePropertyPort(httpGestalt, "Headers", "Headers for the request", Data.Types.String, true, new Data(""));
             
             if (payload)
+            {
                 CustomNodeManager.CreatePropertyPort(httpGestalt, "Payload", "Payload for the request", Data.Types.String, true, new Data(""));
+                CustomNodeManager.CreateOutputPort(httpGestalt, "Continue", "Continue", Data.Types.String);
+            }
+            else
+            {
+                CustomNodeManager.CreateOutputPort(httpGestalt, "Result", "Result of the request", Data.Types.String);
+            }
 
 
-            CustomNodeManager.CreateOutputPort(httpGestalt, "Result", "Result of the request", Data.Types.String);
 
-            httpGestalt.agent = agent;
 
             CustomNodeManager.CreateNode(httpGestalt, "HTTP " + name);
         }
@@ -104,6 +106,7 @@ namespace HttpNodes
 		}
 #endif
 
+        // This is for the warning message when you run a device with http nodes
         // I cannot get it to release the mouse. So for now it is disabled
         
         /*

@@ -7,34 +7,29 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using UnityModManagerNet;
+using PlasmaModding;
 
 namespace HttpNodes
 {
-    public class HttpPatchAgent : Agent
+    public class HttpPatchAgent : CustomAgent
     {
-        protected override void OnSetupFinished()
-        {
-            this._v1 = this._runtimeProperties[3];
-            this._v2 = this._runtimeProperties[4];
-            this._v3 = this._runtimeProperties[5];
-        }
 
         [SketchNodePortOperation(1)]
         public void Patch(SketchNode node)
         {
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"), this._v1.GetValue().stringValue);
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), GetProperty("Url").GetValueString());
 
             var jsonBody = new Dictionary<string, string>();
             var jsonHeaders = new Dictionary<string, string>();
-            if (_v2.GetValueString() != "")
+            if (GetProperty("Headers").GetValueString() != "")
             {
-                jsonHeaders = JsonConvert.DeserializeObject<Dictionary<string, string>>(_v2.GetValueString());
+                jsonHeaders = JsonConvert.DeserializeObject<Dictionary<string, string>>(GetProperty("Headers").GetValueString());
             }
-            if (_v3.GetValueString() != "")
+            if (GetProperty("Payload").GetValueString() != "")
             {
-                jsonBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(_v3.GetValueString());
+                jsonBody = JsonConvert.DeserializeObject<Dictionary<string, string>>(GetProperty("Payload").GetValueString());
             }
-            if (_v1.GetValueString() == "")
+            if (GetProperty("Url").GetValueString() == "")
             {
                 return;
             }
@@ -43,22 +38,15 @@ namespace HttpNodes
             {
                 request.Headers.Add(k, jsonHeaders[k]);
             }
-            UnityModManager.Logger.Log("About to send " + jsonBody.ToString() + " to " + this._v1.GetValue().stringValue);
             try
             {
                 Main.client.SendAsync(request).GetAwaiter().GetResult();
-                node.ports.Values.Last().Commit(new Data());
-
+                WriteOutput("Continue", new Data());
             }
             catch (Exception e)
             {
-                node.ports.Values.Last().Commit(new Data("Error 503 server unavailable " + e.ToString()));
+                WriteOutput("Continue", new Data("An error has occured"));
             }
         }
-
-        private AgentProperty _v1;
-        private AgentProperty _v2;
-        private AgentProperty _v3;
-
     }
 }

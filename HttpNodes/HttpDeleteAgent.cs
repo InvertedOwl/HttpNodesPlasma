@@ -6,30 +6,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityModManagerNet;
+using PlasmaModding;
 
 namespace HttpNodes
 {
-    public class HttpDeleteAgent : Agent
+    public class HttpDeleteAgent : CustomAgent
     {
-        protected override void OnSetupFinished()
-        {
-            foreach (int id in this._runtimeProperties.Keys)
-            {
-                UnityModManager.Logger.Log(id + ": " + this._runtimeProperties[id]);
-            }
-
-            this._v1 = this._runtimeProperties[3];
-            this._v2 = this._runtimeProperties[4];
-
-        }
 
         [SketchNodePortOperation(1)]
         public void Delete(SketchNode node)
         {
             var jsonHeaders = new Dictionary<string, string>();
-            if (_v2.GetValueString() != "")
+            if (GetProperty("Headers").GetValueString() != "")
             {
-                jsonHeaders = JsonConvert.DeserializeObject<Dictionary<string, string>>(_v2.GetValueString());
+                jsonHeaders = JsonConvert.DeserializeObject<Dictionary<string, string>>(GetProperty("Headers").GetValueString());
             }
             foreach (var k in jsonHeaders.Keys)
             {
@@ -39,16 +29,14 @@ namespace HttpNodes
 
             try
             {
-                Main.client.DeleteAsync(this._v1.GetValueString()).GetAwaiter().GetResult();
+                Main.client.DeleteAsync(GetProperty("Url").GetValueString()).GetAwaiter().GetResult();
 
-                node.ports.Values.Last().Commit(new Data("200 OK"));
+                WriteOutput("Result", new Data("200 OK"));
             }
             catch (Exception e)
             {
-                node.ports.Values.Last().Commit(new Data("An error has occured"));
+                WriteOutput("Result", new Data("An error has occured"));
             }
         }
-        private AgentProperty _v1;
-        private AgentProperty _v2;
     }
 }
