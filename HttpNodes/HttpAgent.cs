@@ -1,7 +1,10 @@
 ﻿using Behavior;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using UnityModManagerNet;
 using Newtonsoft.Json;
 using PlasmaModding;
@@ -50,7 +53,7 @@ namespace HttpNodes
 
                 //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
-                WriteOutput("Headers", new Data(response.Headers.ToString()));
+                WriteOutput("Headers", new Data(headersToJson(response.Headers)));
             }
 
         }
@@ -88,7 +91,7 @@ namespace HttpNodes
 
                     //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
-                    WriteOutput("Headers", new Data(response.Headers.ToString()));
+                    WriteOutput("Headers", new Data(headersToJson(response.Headers)));
                 }
             }
             catch (Exception e)
@@ -137,7 +140,7 @@ namespace HttpNodes
 
                 //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
-                WriteOutput("Headers", new Data(response.Headers.ToString()));
+                WriteOutput("Headers", new Data(headersToJson(response.Headers)));
             }
 
         }
@@ -185,7 +188,7 @@ namespace HttpNodes
 
                 //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
-                WriteOutput("Headers", new Data(response.Headers.ToString()));
+                WriteOutput("Headers", new Data(headersToJson(response.Headers)));
             }
         }
         
@@ -221,13 +224,24 @@ namespace HttpNodes
 
                     //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
-                    WriteOutput("Headers", new Data(response.Headers.ToString()));
+                    WriteOutput("Headers", new Data(headersToJson(response.Headers)));
                 }
             }
             catch (Exception e)
             {
                 WriteOutput("Result", new Data("An error has occured " + e.ToString()));
             }
+        }
+
+        public static string headersToJson (HttpResponseHeaders headers)
+        {
+            Dictionary<string, string> json = new Dictionary<string, string>();
+            foreach (var header in headers)
+            {
+                json[header.Key] = header.Value.First();
+            }
+
+            return JsonConvert.SerializeObject(json);
         }
     }
 }
