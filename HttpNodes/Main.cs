@@ -40,56 +40,25 @@ namespace HttpNodes
 
         public static void InitNodes()
         {
-            AgentCategoryEnum httpCategory = CustomNodeManager.CustomCategory("HTTP");
+            AgentCategoryEnum httpCategory = CustomNodeManager.CustomCategory("Networking");
 
+            AgentGestalt httpnode = CustomNodeManager.CreateGestalt(typeof(HttpAgent), "HTTP", "Executes a http request with the given requirements", httpCategory);
 
-            // Get Request
-            addHttpNode("GET", typeof(HttpGetAgent), false, httpCategory);
-
-            // Delete Request
-            addHttpNode("DELETE", typeof(HttpDeleteAgent), false, httpCategory);
-
-            // Post Request
-            addHttpNode("POST", typeof(HttpPostAgent), true, httpCategory);
-
-            // Put Request
-            addHttpNode("PUT", typeof(HttpPutAgent), true, httpCategory);
-
-            // Patch Request
-            addHttpNode("PATCH", typeof(HttpPatchAgent), true, httpCategory);
-        }
-
-        public static void addHttpNode(string name, System.Type agent, bool payload, AgentCategoryEnum category)
-        {
-            AgentGestalt httpGestalt = CustomNodeManager.CreateGestalt(agent, "HTTP " + name, "Executes a " + name + " request on the provided URL", category);
-
-            // Ports
-            CustomNodeManager.CreateCommandPort(httpGestalt, name, "Executes a " + name + " request on the provided URL", 1);
-
-            CustomNodeManager.CreatePropertyPort(httpGestalt, "Url", "Executes a " + name + " request on the provided URL", Data.Types.String, true, new Data(""));
-            CustomNodeManager.CreatePropertyPort(httpGestalt, "Headers", "Headers for the request", Data.Types.String, true, new Data(""));
+            string name = "HTTP";
+            CustomNodeManager.CreateCommandPort(httpnode, "POST", "Executes a POST request on the provided URL", 1);
+            CustomNodeManager.CreateCommandPort(httpnode, "GET", "Executes a GET request on the provided URL", 2);
+            CustomNodeManager.CreateCommandPort(httpnode, "PUT", "Executes a PUT request on the provided URL", 3);
+            CustomNodeManager.CreateCommandPort(httpnode, "PATCH", "Executes a PATCH request on the provided URL", 4);
+            CustomNodeManager.CreateCommandPort(httpnode, "DELETE", "Executes a DELETE request on the provided URL", 5);
             
-            if (payload)
-            {
-                CustomNodeManager.CreatePropertyPort(httpGestalt, "Payload", "Payload for the request", Data.Types.String, true, new Data(""));
-                CustomNodeManager.CreateOutputPort(httpGestalt, "Continue", "Continue", Data.Types.String);
-            }
-            else
-            {
-                CustomNodeManager.CreateOutputPort(httpGestalt, "Result", "Result of the request", Data.Types.String);
-            }
+            CustomNodeManager.CreatePropertyPort(httpnode, "Url", "Executes a " + name + " request on the provided URL", Data.Types.String, true, new Data(""));
+            CustomNodeManager.CreatePropertyPort(httpnode, "Headers", "Headers for the request", Data.Types.String, true, new Data(""));
+            CustomNodeManager.CreatePropertyPort(httpnode, "Payload", "Payload for the request", Data.Types.String, true, new Data(""));
+            CustomNodeManager.CreateOutputPort(httpnode, "Result", "Result of the request", Data.Types.String);
+            CustomNodeManager.CreateOutputPort(httpnode, "Headers", "Headers of the response", Data.Types.String);
+            CustomNodeManager.CreateNode(httpnode, name);
 
-            if (name == "GET")
-            {
-                CustomNodeManager.CreateOutputPort(httpGestalt, "Headers", "Headers of the response", Data.Types.String);
-            }
-
-
-
-
-            CustomNodeManager.CreateNode(httpGestalt, "HTTP " + name);
         }
-
 
         static bool OnToggle(UnityModManager.ModEntry entry, bool active)
         {
