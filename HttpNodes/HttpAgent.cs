@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using UnityModManagerNet;
 using Newtonsoft.Json;
 using PlasmaModding;
+using System.Security.Policy;
 
 namespace HttpNodes
 {
@@ -36,13 +37,24 @@ namespace HttpNodes
                 UnityModManager.Logger.Log("Adding to header " + k + ": " + jsonHeaders[k]);
                 Main.client.DefaultRequestHeaders.Add(k, jsonHeaders[k]);
             }
-            
-            using (var client = new HttpClient())
+
+            CookieContainer cookies = new CookieContainer();
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.CookieContainer = cookies;
+
+            using (var client = new HttpClient(handler))
             {
+
+
                 var url = GetProperty("Url").GetValueString();
                 var response = client.PostAsync(url, new FormUrlEncodedContent(jsonBody)).Result;
-                    
 
+
+                Uri uri = new Uri(url);
+                IEnumerable<Cookie> responseCookies = cookies.GetCookies(uri).Cast<Cookie>();
+                Dictionary<string, string> cookie = new Dictionary<string, string>();
+                foreach (Cookie cook in responseCookies)
+                    cookie[cook.Name] = cook.Value;
 
                 // by calling .Result you are performing a synchronous call
                 var responseContent = response.Content;
@@ -54,6 +66,8 @@ namespace HttpNodes
                 //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
                 WriteOutput("Headers", new Data(headersToJson(response.Headers)));
+                WriteOutput("Cookies", new Data(JsonConvert.SerializeObject(cookie)));
+
             }
 
         }
@@ -75,12 +89,22 @@ namespace HttpNodes
 
             try
             {
-                using (var client = new HttpClient())
+                CookieContainer cookies = new CookieContainer();
+                HttpClientHandler handler = new HttpClientHandler();
+                handler.CookieContainer = cookies;
+
+                using (var client = new HttpClient(handler))
                 {
                     var url = GetProperty("Url").GetValueString();
                     var response = client.GetAsync(url).Result;
-                    
 
+                    Uri uri = new Uri(url);
+                    IEnumerable<Cookie> responseCookies = cookies.GetCookies(uri).Cast<Cookie>();
+                    Dictionary<string, string> cookie = new Dictionary<string, string>();
+                    foreach (Cookie cook in responseCookies)
+                        cookie[cook.Name] = cook.Value;
+
+                    UnityModManager.Logger.Log("" + JsonConvert.SerializeObject(cookie));
 
                     // by calling .Result you are performing a synchronous call
                     var responseContent = response.Content;
@@ -92,6 +116,8 @@ namespace HttpNodes
                     //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
                     WriteOutput("Headers", new Data(headersToJson(response.Headers)));
+                    WriteOutput("Cookies", new Data(JsonConvert.SerializeObject(cookie)));
+
                 }
             }
             catch (Exception e)
@@ -123,13 +149,21 @@ namespace HttpNodes
                 UnityModManager.Logger.Log("Adding to header " + k + ": " + jsonHeaders[k]);
                 Main.client.DefaultRequestHeaders.Add(k, jsonHeaders[k]);
             }
-            
-            using (var client = new HttpClient())
+
+            CookieContainer cookies = new CookieContainer();
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.CookieContainer = cookies;
+
+            using (var client = new HttpClient(handler))
             {
                 var url = GetProperty("Url").GetValueString();
                 var response = client.PutAsync(url, new FormUrlEncodedContent(jsonBody)).Result;
-                    
 
+                Uri uri = new Uri(url);
+                IEnumerable<Cookie> responseCookies = cookies.GetCookies(uri).Cast<Cookie>();
+                Dictionary<string, string> cookie = new Dictionary<string, string>();
+                foreach (Cookie cook in responseCookies)
+                    cookie[cook.Name] = cook.Value;
 
                 // by calling .Result you are performing a synchronous call
                 var responseContent = response.Content;
@@ -141,6 +175,8 @@ namespace HttpNodes
                 //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
                 WriteOutput("Headers", new Data(headersToJson(response.Headers)));
+                WriteOutput("Cookies", new Data(JsonConvert.SerializeObject(cookie)));
+
             }
 
         }
@@ -172,12 +208,21 @@ namespace HttpNodes
             }
 
             request.Content = new FormUrlEncodedContent(jsonBody);
-            
-            using (var client = new HttpClient())
-            {
-                var response = client.SendAsync(request).Result;
-                    
 
+            CookieContainer cookies = new CookieContainer();
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.CookieContainer = cookies;
+
+            using (var client = new HttpClient(handler))
+            {
+                var url = GetProperty("Url").GetValueString();
+                var response = client.SendAsync(request).Result;
+
+                Uri uri = new Uri(url);
+                IEnumerable<Cookie> responseCookies = cookies.GetCookies(uri).Cast<Cookie>();
+                Dictionary<string, string> cookie = new Dictionary<string, string>();
+                foreach (Cookie cook in responseCookies)
+                    cookie[cook.Name] = cook.Value;
 
                 // by calling .Result you are performing a synchronous call
                 var responseContent = response.Content;
@@ -189,6 +234,8 @@ namespace HttpNodes
                 //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
                 WriteOutput("Headers", new Data(headersToJson(response.Headers)));
+                WriteOutput("Cookies", new Data(JsonConvert.SerializeObject(cookie)));
+
             }
         }
         
@@ -208,12 +255,20 @@ namespace HttpNodes
 
             try
             {
-                using (var client = new HttpClient())
+                CookieContainer cookies = new CookieContainer();
+                HttpClientHandler handler = new HttpClientHandler();
+                handler.CookieContainer = cookies;
+
+                using (var client = new HttpClient(handler))
                 {
                     var url = GetProperty("Url").GetValueString();
                     var response = client.DeleteAsync(url).Result;
-                    
 
+                    Uri uri = new Uri(url);
+                    IEnumerable<Cookie> responseCookies = cookies.GetCookies(uri).Cast<Cookie>();
+                    Dictionary<string, string> cookie = new Dictionary<string, string>();
+                    foreach (Cookie cook in responseCookies)
+                        cookie[cook.Name] = cook.Value;
 
                     // by calling .Result you are performing a synchronous call
                     var responseContent = response.Content;
@@ -225,6 +280,8 @@ namespace HttpNodes
                     //IEnumerable<string> cookies = response.Headers.SingleOrDefault(header => header.Key == "Set-Cookie").Value;
 
                     WriteOutput("Headers", new Data(headersToJson(response.Headers)));
+                    WriteOutput("Cookies", new Data(JsonConvert.SerializeObject(cookie)));
+
                 }
             }
             catch (Exception e)

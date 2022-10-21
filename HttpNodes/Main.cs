@@ -56,6 +56,7 @@ namespace HttpNodes
             CustomNodeManager.CreatePropertyPort(httpnode, "Payload", "Payload for the request", Data.Types.String, true, new Data(""));
             CustomNodeManager.CreateOutputPort(httpnode, "Result", "Result of the request", Data.Types.String);
             CustomNodeManager.CreateOutputPort(httpnode, "Headers", "Headers of the response", Data.Types.String);
+            CustomNodeManager.CreateOutputPort(httpnode, "Cookies", "Cookies of the response", Data.Types.String);
             CustomNodeManager.CreateNode(httpnode, name);
 
         }
